@@ -1,12 +1,12 @@
-import pygame
+import pygame # type: ignore
 import math
 
 # --- Configuration ---
 WIDTH, HEIGHT = 800, 600
 GRAVITY = 0.5
-BOUNCE_DAMPING = 0.7
-FRICTION = 0.999
-ITERATIONS = 5  # Higher = Stiffer constraints
+BOUNCE_DAMPING = 0.9
+FRICTION = 0.99999
+ITERATIONS = 50 # Higher = Stiffer constraints
 
 class Point:
     def __init__(self, x, y):
@@ -17,8 +17,9 @@ class Point:
         self.pinned = False
 
     def update(self):
-        if self.pinned:
+        if self.pinned: 
             return
+        
 
         # Verlet Integration
         # velocity is inferred from the difference between current and old position
@@ -66,7 +67,7 @@ class Stick:
             return
 
         diff = self.length - dist
-        percent = diff / dist / 2.0
+        percent = diff / dist / 30
 
         offset_x = dx * percent
         offset_y = dy * percent
@@ -112,21 +113,25 @@ solver = Solver()
 
 # Create a Box (4 points)
 p1 = Point(300, 100)
-p2 = Point(400, 100)
-p3 = Point(400, 200)
-p4 = Point(300, 200)
-
-solver.points.extend([p1, p2, p3, p4])
+p2 = Point(386, 150)
+p3 = Point(386, 250)
+p4 = Point(300, 300)
+p5 = Point(214, 250)
+p6 = Point(214, 150)
+solver.points.extend([p1, p2, p3, p4, p5, p6])
 
 # Edges
 solver.sticks.append(Stick(p1, p2))
 solver.sticks.append(Stick(p2, p3))
 solver.sticks.append(Stick(p3, p4))
-solver.sticks.append(Stick(p4, p1))
+solver.sticks.append(Stick(p4, p5))
+solver.sticks.append(Stick(p5, p6))
+solver.sticks.append(Stick(p6, p1))
 
 # Cross-braces (Internal Support)
-solver.sticks.append(Stick(p1, p3))
-# solver.sticks.append(Stick(p2, p4)) # <-- Uncomment this to make the box rigid!
+solver.sticks.append(Stick(p4, p6))
+solver.sticks.append(Stick(p2, p4))
+solver.sticks.append(Stick(p2, p6))
 
 running = True
 while running:
@@ -135,10 +140,18 @@ while running:
             running = False
         # Reset on Click
         if event.type == pygame.MOUSEBUTTONDOWN:
-            p1.x, p1.y = 300, 100; p1.old_x, p1.old_y = 300, 100
-            p2.x, p2.y = 400, 100; p2.old_x, p2.old_y = 400, 100
-            p3.x, p3.y = 400, 200; p3.old_x, p3.old_y = 400, 200
-            p4.x, p4.y = 300, 200; p4.old_x, p4.old_y = 300, 200
+            p1.x, p1.y = 300, 100
+            p1.old_x, p1.old_y = 300, 100
+            p2.x, p2.y = 386, 150
+            p2.old_x, p2.old_y = 386, 150       
+            p3.x, p3.y = 386, 250
+            p3.old_x, p3.old_y = 386, 250
+            p4.x, p4.y = 300, 300
+            p4.old_x, p4.old_y = 300, 300
+            p5.x, p5.y = 214, 250
+            p5.old_x, p5.old_y = 214, 250
+            p6.x, p6.y = 214, 150
+            p6.old_x, p6.old_y = 214, 150
 
     solver.update()
 
