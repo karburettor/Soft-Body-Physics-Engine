@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# C++ / CMake / SFML
+build/
+bin/
+*.o
+*.out
+compile_commands.json
+.vscode/
+
+# OS
+.DS_Store
