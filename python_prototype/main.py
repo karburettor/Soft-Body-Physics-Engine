@@ -112,10 +112,10 @@ clock = pygame.time.Clock()
 solver = Solver()
 
 # Create a Box (4 points)
-p1 = Point(300, 100)
+p1 = Point(299, 100)
 p2 = Point(386, 150)
 p3 = Point(386, 250)
-p4 = Point(300, 300)
+p4 = Point(301, 300)
 p5 = Point(214, 250)
 p6 = Point(214, 150)
 solver.points.extend([p1, p2, p3, p4, p5, p6])
@@ -133,31 +133,66 @@ solver.sticks.append(Stick(p4, p6))
 solver.sticks.append(Stick(p2, p4))
 solver.sticks.append(Stick(p2, p6))
 
+selected_point = None
+is_dragging = False
+
 running = True
 while running:
+    mx, my = pygame.mouse.get_pos()
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        # Reset on Click
+        
+        # Mouse Down: Grab Closest Point
         if event.type == pygame.MOUSEBUTTONDOWN:
-            p1.x, p1.y = 300, 100
-            p1.old_x, p1.old_y = 300, 100
-            p2.x, p2.y = 386, 150
-            p2.old_x, p2.old_y = 386, 150       
-            p3.x, p3.y = 386, 250
-            p3.old_x, p3.old_y = 386, 250
-            p4.x, p4.y = 300, 300
-            p4.old_x, p4.old_y = 300, 300
-            p5.x, p5.y = 214, 250
-            p5.old_x, p5.old_y = 214, 250
-            p6.x, p6.y = 214, 150
-            p6.old_x, p6.old_y = 214, 150
+            if event.button == 1: # Left Click
+                min_dist = 20
+                for p in solver.points:
+                    dist = math.sqrt((mx - p.x)**2 + (my - p.y)**2)
+                    if dist < min_dist:
+                        min_dist = dist
+                        selected_point = p
+                        is_dragging = True
+            
+            elif event.button == 3: # Right Click: Reset
+                            p1.x, p1.y = 300, 100
+                            p1.old_x, p1.old_y = 300, 100
+                            p2.x, p2.y = 386, 150
+                            p2.old_x, p2.old_y = 386, 150       
+                            p3.x, p3.y = 386, 250
+                            p3.old_x, p3.old_y = 386, 250
+                            p4.x, p4.y = 300, 300
+                            p4.old_x, p4.old_y = 300, 300
+                            p5.x, p5.y = 214, 250
+                            p5.old_x, p5.old_y = 214, 250
+                            p6.x, p6.y = 214, 150
+                            p6.old_x, p6.old_y = 214, 150
+
+        # Mouse Up: Release
+        if event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                is_dragging = False
+                selected_point = None
+
+    # Apply Dragging Logic
+    if is_dragging and selected_point:
+        selected_point.x = mx
+        selected_point.y = my
+        # Note: We do NOT update old_x/old_y here. 
+        # The difference (pos - old_pos) creates the velocity for the "fling".
 
     solver.update()
 
     screen.fill((30, 30, 30))
+    
+    # Draw Mouse helper
+    if is_dragging:
+        pygame.draw.circle(screen, (255, 255, 255), (mx, my), 6, 1)
+        
     solver.draw(screen)
     pygame.display.flip()
     clock.tick(60)
 
 pygame.quit()
+
